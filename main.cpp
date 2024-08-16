@@ -2,6 +2,8 @@
 #include <boost/asio/ip/basic_endpoint.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
+#include <fstream>
+
 using namespace std;
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -12,33 +14,45 @@ int main()
 	
 	//attempt to start server
 	try {
-		//create io
+		
+		//create io and socket info
 		io_context io;
-
-		//create socket information with listener (acceptor)
 		tcp::endpoint addr_info(tcp::v4(), 80);
 		tcp::acceptor acceptor(io, addr_info);
-
-		//create buffer to write message
-		string body = "<Body>Hello World</Body>";
-		string buf =
-			"HTTP/1.1 200 OK\r\n"
-			"Content-Length: " + to_string(body.size()) + "\r\n"
-			"Content-Type: text/html\r\n"
-			"\r\n" +
-			body;
 
 		for (;;) {
 			//establishing connection
 			cout << "Waiting for connection..." << endl;
 			tcp::socket socket(io);
 			acceptor.accept(socket);
-
-			//connection info
 			boost::system::error_code error;
-			size_t bytes_transferred = write(socket, buffer(buf), error);
-			
-			//post connection handling
+
+			//get html file
+			ifstream html_file("index.html");
+			if (!html_file.is_open()) {
+				cerr << "Error: Could not open file 'index.html'" << endl;
+				continue;
+			}
+
+			//read the entire HTML file into a string
+			stringstream html_stream;
+			html_stream << html_file.rdbuf();
+			string body = html_stream.str();
+
+			//prepare HTTP response headers
+			string headers =
+				"HTTP/1.1 200 OK\r\n"
+				"Content-Length: " + to_string(body.size()) + "\r\n"
+				"Content-Type: text/html\r\n"
+				"\r\n";
+
+			//combine headers and body
+			string response = headers + body;
+
+			//send the full response
+			size_t bytes_transferred = write(socket, buffer(response), error);
+
+			//error handling
 			if (!error) {
 				cout << "Sent " << bytes_transferred << " bytes successfully." << endl;
 			}
