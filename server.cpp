@@ -21,23 +21,37 @@ void handleServer(int port) {
 			//establishing connection
 			cout << "Waiting for connection..." << endl;
 			tcp::socket socket(io);
-			acceptor.accept(socket);
-			boost::system::error_code error;
+			boost::system::error_code acceptorError;
+			acceptor.accept(socket, acceptorError);
 
-			string response;
+			//look for successful connection
+			if (!acceptorError) {
+				for (;;) {
+					cout << "Connection established!" << endl;
 
-			cout << "Enter the message to send: ";
-			cin >> response;
+					boost::system::error_code transferError;
 
-			//send the full response
-			size_t bytes_transferred = write(socket, buffer(response + "TERM"), error);
+					//get text to send
+					string response;
+					string delimiter = "\r\n.\r\n";
 
-			//error handling
-			if (!error) {
-				cout << "Sent " << bytes_transferred << " bytes successfully." << endl;
+					cout << "Enter the message to send: ";
+					getline(cin, response);
+
+					//send the full response
+					size_t bytes_transferred = write(socket, buffer(response + delimiter), transferError);
+
+					//error handling
+					if (!transferError) {
+						cout << "Sent " << bytes_transferred << " bytes successfully." << endl;
+					}
+					else {
+						cout << "Error: " << transferError.message() << endl;
+					}
+				}
 			}
 			else {
-				cout << "Error: " << error.message() << endl;
+				cout << "Error: " << acceptorError.message() << endl;
 			}
 		}
 

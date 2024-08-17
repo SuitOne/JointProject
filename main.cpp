@@ -9,61 +9,67 @@
 
 using namespace std;
 
+bool getInputInt(int &intToSet) {
+	try {
+		string userChoice;
+		getline(cin, userChoice);
+		int intChoice = stoi(userChoice);
+		intToSet = intChoice;
+		return true;
+	}
+	catch (const std::invalid_argument&) {
+		cerr << "Invalid input, please enter a numeric choice." << endl;
+	}
+	catch (const std::out_of_range&) {
+		cerr << "Invalid input, out of range." << endl;
+	}
+
+	return false;
+}
+
 void setupServer() {
 	//get port
-	cout << "Please enter a port to host the server with: ";
+	cout << "Please enter a port to host on (1024 - 65535): ";
+
 	int userPort;
-	cin >> userPort;
+	while (!getInputInt(userPort) || userPort < 1024 || userPort > 65535) {
+		cerr << "Invalid input, please enter a valid port number between 1024 and 65535: ";
+	}
+	cout << "Valid port entered: " << userPort << endl;
 
 	//start server
 	handleServer(userPort);
 }
 
 void setupClient() {
+	//establish variables
 	string input_ip;
 	string input_port;
 	int port;
 	boost::asio::ip::address_v4 ip_addr;
 
+	//get and verify ip
 	for (;;) {
 		cout << "Please enter an IP to connect to: ";
-		cin >> input_ip;
-
-		cout << "Please enter a port (1024 - 65535) to connect to: ";
-		cin >> input_port;
+		getline(cin, input_ip);;
 
 		//verify ip
 		try {
-			ip_addr = boost::asio::ip::make_address_v4(input_ip);
+			ip_addr = (input_ip.empty()) ? 
+				boost::asio::ip::make_address_v4("127.0.0.1") : boost::asio::ip::make_address_v4(input_ip);
 			cout << "Valid IP address entered: " << ip_addr.to_string() << endl;
-
-			
+			break;
 		}
 		catch (exception& e) {
 			cerr << "Invalid IP address entered: " << e.what() << endl;
 			continue;
 		}
+	}
 
-		//verify port
-		try {
-			port = stoi(input_port);
-
-			if (port >= 1024 && port <= 65535) {
-				cout << "Valid port entered: " << port << endl;
-				break; //valid
-			}
-			else {
-				cerr << "Port number must be between 1024 and 65535." << endl;
-			}
-		}
-		catch (invalid_argument&) {
-			cerr << "Invalid input, please enter a numeric port number." << endl;
-			continue;
-		}
-		catch (out_of_range&) {
-			cerr << "Invalid input, please enter a port number in range." << endl;
-			continue;
-		}
+	//get and verify port
+	cout << "Please enter a port (1024 - 65535) to connect to: ";
+	while (!getInputInt(port) || port < 1024 || port > 65535) {
+		cerr << "Invalid input, please enter a valid port (1024 - 65535) to connect to: ";
 	}
 
 	//move on to connection
@@ -72,10 +78,14 @@ void setupClient() {
 
 int main()
 {
+	//determine if user is hosting or joining server
 	for (;;) {
 		cout << "Please enter '1' to host a server or '2' to find a server: ";
+
 		int userChoice;
-		cin >> userChoice;
+		while (!getInputInt(userChoice) || (userChoice != 1 && userChoice != 2)) {
+			cerr << "Invalid input, please enter '1' to host a server or '2' to find a server: ";
+		}
 
 		if (userChoice == 1) {
 			setupServer();
