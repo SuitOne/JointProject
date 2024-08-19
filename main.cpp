@@ -4,8 +4,8 @@
 #include <boost/asio.hpp>
 #include <boost/lambda/lambda.hpp>
 
-#include "client.h"
-#include "server.h"
+#include "ChatServer.h"
+#include "ChatClient.h"
 
 using namespace std;
 
@@ -18,10 +18,10 @@ bool getInputInt(int &intToSet) {
 		return true;
 	}
 	catch (const std::invalid_argument&) {
-		cerr << "Invalid input, please enter a numeric choice." << endl;
+		cerr << "ERROR, Invalid input, please enter a numeric choice." << endl;
 	}
 	catch (const std::out_of_range&) {
-		cerr << "Invalid input, out of range." << endl;
+		cerr << "ERROR, Invalid input, out of range." << endl;
 	}
 
 	return false;
@@ -33,12 +33,19 @@ void setupServer() {
 
 	int userPort;
 	while (!getInputInt(userPort) || userPort < 1024 || userPort > 65535) {
-		cerr << "Invalid input, please enter a valid port number between 1024 and 65535: ";
+		cerr << "ERROR, Invalid input, please enter a valid port number between 1024 and 65535: ";
 	}
 	cout << "Valid port entered: " << userPort << endl;
 
 	//start server
-	handleServer(userPort);
+	try {
+		io_context ioContext;
+		ChatServer server(ioContext, userPort);
+		ioContext.run();
+	}
+	catch (exception& e) {
+		cout << "ERROR, Exception on server start: " << e.what() << endl;
+	}
 }
 
 void setupClient() {
@@ -61,7 +68,7 @@ void setupClient() {
 			break;
 		}
 		catch (exception& e) {
-			cerr << "Invalid IP address entered: " << e.what() << endl;
+			cerr << "ERROR, Invalid IP address entered: " << e.what() << endl;
 			continue;
 		}
 	}
@@ -69,11 +76,18 @@ void setupClient() {
 	//get and verify port
 	cout << "Please enter a port (1024 - 65535) to connect to: ";
 	while (!getInputInt(port) || port < 1024 || port > 65535) {
-		cerr << "Invalid input, please enter a valid port (1024 - 65535) to connect to: ";
+		cerr << "ERROR, Invalid input, please enter a valid port (1024 - 65535) to connect to: ";
 	}
 
 	//move on to connection
-	handleConnection(ip_addr, port);
+	try {
+		io_context ioContext;
+		ChatClient client(ioContext, ip_addr, port);
+		client.start();
+	}
+	catch(const exception& e){
+		cerr << "ERROR, Exception on client connection: " << e.what() << endl;
+	}
 }
 
 int main()
@@ -84,7 +98,7 @@ int main()
 
 		int userChoice;
 		while (!getInputInt(userChoice) || (userChoice != 1 && userChoice != 2)) {
-			cerr << "Invalid input, please enter '1' to host a server or '2' to find a server: ";
+			cerr << "ERROR, Invalid input, please enter '1' to host a server or '2' to find a server: ";
 		}
 
 		if (userChoice == 1) {
