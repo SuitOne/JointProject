@@ -1,0 +1,3 @@
+/home/devooty/programming/JointProject/CMakeFiles/jointproject.dir
+/home/devooty/programming/JointProject/CMakeFiles/edit_cache.dir
+/home/devooty/programming/JointProject/CMakeFiles/rebuild_cache.dir

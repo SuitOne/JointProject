@@ -4,8 +4,8 @@
 #include <boost/asio.hpp>
 #include <boost/lambda/lambda.hpp>
 
-#include "ChatServer.h"
-#include "ChatClient.h"
+#include "./include/ChatServer.h"
+#include "./include/ChatClient.h"
 
 using namespace std;
 

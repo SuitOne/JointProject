@@ -1,4 +1,4 @@
-#include "ChatServer.h"
+#include "./include/ChatServer.h"
 #include <array>
 #include <iostream>
 #include <boost/asio.hpp>
@@ -73,7 +73,7 @@ void ChatServer::startAccept() {
 		[this, newSocket](boost::system::error_code ec) {
 			if (!ec) {
 				//create client, then add to list
-				auto client = make_shared<Client>(nextClientId++, move(*newSocket),
+			std::shared_ptr<Client> client = make_shared<Client>(nextClientId++, move(*newSocket),
 					[this](const string& message, int senderId) {
 						broadcastMessage(message, senderId);
 					});
