@@ -9,10 +9,17 @@
 
 using namespace std;
 
-bool getInputInt(int &intToSet) {
+bool getInputInt(int &intToSet, bool useDefault = false, int defaultInt = 0) {
 	try {
 		string userChoice;
 		getline(cin, userChoice);
+
+		//use default int if the user entered nothing
+		if (userChoice.empty() && useDefault) {
+			intToSet = defaultInt;
+			return true;
+		}
+
 		int intChoice = stoi(userChoice);
 		intToSet = intChoice;
 		return true;
@@ -32,7 +39,7 @@ void setupServer() {
 	cout << "Please enter a port to host on (1024 - 65535): ";
 
 	int userPort;
-	while (!getInputInt(userPort) || userPort < 1024 || userPort > 65535) {
+	while (!getInputInt(userPort, true, 2000) || userPort < 1024 || userPort > 65535) {
 		cerr << "ERROR, Invalid input, please enter a valid port number between 1024 and 65535: ";
 	}
 	cout << "Valid port entered: " << userPort << endl;
@@ -75,7 +82,7 @@ void setupClient() {
 
 	//get and verify port
 	cout << "Please enter a port (1024 - 65535) to connect to: ";
-	while (!getInputInt(port) || port < 1024 || port > 65535) {
+	while (!getInputInt(port, true, 2000) || port < 1024 || port > 65535) {
 		cerr << "ERROR, Invalid input, please enter a valid port (1024 - 65535) to connect to: ";
 	}
 

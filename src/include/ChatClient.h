@@ -18,7 +18,7 @@ private:
     void handleWrite(const boost::system::error_code& ec, std::size_t bytesTransferred);
 
     void startRead();
-    void startWrite(std::string message);
+    void startWrite(const std::string& message);
 
     io_context& ioContext_;
     tcp::socket socket_;
